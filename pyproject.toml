@@ -1,0 +1,54 @@
+[project]
+name = "eCommerce"
+version = "0.0.1"
+dependencies = []
+requires-python = ">=3.13,<3.14"
+authors = [
+  { name = "Adesola", email = "decodeine@gmail.com" }
+]
+maintainers = [
+  { name = "Adesola", email = "decodeine@gmail.com" }
+]
+description = "Django backend for eCommerce project"
+readme = "README.md"
+keywords = ["api", "backend", "payments", "newsletter", "accounts","paystack"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+base = [
+  # django-webpack-loader
+  "Django>=5.1,<5.2",
+  "Pillow",
+  "django-allauth",
+  "django-cors-headers",
+  "dj-rest-auth",
+  "django-taggit",
+  "djangorestframework",
+  "djangorestframework-simplejwt",
+  "django-filter",
+  "psycopg2",
+  "python-decouple",
+  "requests",
+]
+development = [
+  "pylint",
+  "coverage",
+  "pytest",
+  "pytest-django",
+]
+production = [
+  "boto3",
+  "django-storages",
+  "gunicorn",
+]
+
+[project.urls]
+#Repository = "#"
+
+[tool.setuptools]
+py-modules = []

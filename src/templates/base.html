@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>{% block title %} API Root {% endblock %}</title>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="container my-4">
+            <h1 class="text-center font-weight-bold">eCommerce Backend API</h1>
+            <p class="text-center text-muted mb-4">Complete API documentation for the gadget store backend</p>
+            
+            <div class="row">
+                <!-- Authentication & Accounts -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">🔐 Authentication & Accounts</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Authentication</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/accounts/auth/login/">Login</a> - POST</li>
+                                <li>• <a href="/api/accounts/auth/logout/">Logout</a> - POST</li>
+                                <li>• <a href="/api/accounts/auth/register/">Register</a> - POST</li>
+                                <li>• <a href="/api/accounts/auth/user/">User Details</a> - GET</li>
+                                <li>• <a href="/api/accounts/auth/password/change/">Change Password</a> - POST</li>
+                                <li>• <a href="/api/accounts/auth/password/reset/">Reset Password</a> - POST</li>
+                            </ul>
+                            
+                            <h6>User Management</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/accounts/api/users/">Users</a> - GET, POST</li>
+                                <li>• <a href="/api/accounts/api/profile/">Profile</a> - GET, PUT, PATCH</li>
+                                <li>• <a href="/api/accounts/api/profile/upload_avatar/">Profile upload avatar</a> - POST</li>
+                                <li>• <a href="/api/accounts/api/profile/remove_avatar/">Profile remove avatar</a> - DELETE</li>
+                            </ul>
+                            
+                            <h6>Addresses</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/accounts/api/addresses/">Addresses</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/accounts/api/addresses/set_default/">Address set default</a> - POST</li>
+                                <li>• <a href="/api/accounts/api/addresses/defaults/">Address defaults</a> - GET</li>
+                            </ul>
+                            
+                            <h6>Activity & Preferences</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/accounts/api/activity-logs/">Activity Logs</a> - GET</li>
+                                <li>• <a href="/api/accounts/api/activity-logs/summary/">Activity summary</a> - GET</li>
+                                <li>• <a href="/api/accounts/api/preferences/">Preferences</a> - GET, POST, PUT</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">📱 Products & Catalog</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Products</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/products/products/">Products</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/products/products/1/reviews/"></a>Product reviews</a> - GET</li>
+                                <li>• <a href="/api/products/products/1/add_review/">Product add review</a> - POST</li>
+                                <li>• <a href="/api/products/products/1/recommendations/">Product recommendations</a> - GET</li>
+                                <li>• <a href="/api/products/products/featured/">Featured Products</a> - GET</li>
+                                <li>• <a href="/api/products/products/deals/">Deals</a> - GET</li>
+                                <li>• <a href="/api/products/products/new_arrivals/">New Arrivals</a> - GET</li>
+                                <li>• <a href="/api/products/products/top_rated/">Top Rated</a> - GET</li>
+                            </ul>
+                            
+                            <h6>Categories & Brands</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/products/brands/">Brands</a> - GET</li>
+                                <li>• <a href="/api/products/brands/1/products/">Brand products</a> - GET</li>
+                                <li>• <a href="/api/products/categories/">Categories</a> - GET</li>
+                            </ul>
+                            
+                            <h6>User Features</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/products/wishlist/">Wishlist</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/products/wishlist/add_product/">Wishlist add product</a> - POST</li>
+                                <li>• <a href="/api/products/wishlist/remove_product/">Wishlist remove product</a> - DELETE</li>
+                                <li>• <a href="/api/products/price-alerts/">Price Alerts</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/products/comparisons/">Product Comparisons</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/products/comparisons/1/add_product/">Comparison add product</a> - POST</li>
+                                <li>• <a href="/api/products/comparisons/1/remove_product/">Comparison remove product</a> - DELETE</li>
+                                <li>• <a href="/api/products/inventory-alerts/">Inventory Alerts</a> (Admin) - GET</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shopping Cart -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">🛒 Shopping Cart</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Cart Management</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/cart/cart/">Cart</a> - GET</li>
+                                <li>• <a href="/api/cart/cart/add_item/">Cart add item</a> - POST</li>
+                                <li>• <a href="/api/cart/cart/update_item/">Cart update item</a> - PATCH</li>
+                                <li>• <a href="/api/cart/cart/remove_item/">Cart remove item</a> - DELETE</li>
+                                <li>• <a href="/api/cart/cart/clear/">Cart clear</a> - DELETE</li>
+                                <li>• <a href="/api/cart/cart/summary/">Cart summary</a> - GET</li>
+                                <li>• <a href="/api/cart/cart/validate_stock/">Cart validate stock</a> - POST</li>
+                                <li>• <a href="/api/cart/cart/save_for_later/">Cart save for later</a> - POST</li>
+                            </ul>
+                            
+                            <h6>Saved for Later</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/cart/saved-for-later/">Saved Items</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/cart/saved-for-later/move_to_cart/">Move to cart</a> - POST</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">📦 Orders & Returns</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Order Management</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/orders/orders/">Orders</a> - GET, POST</li>
+                                <li>• <a href="/api/orders/orders/1/cancel_order/"></a>Order cancel</a> - POST</li>
+                                <li>• <a href="/api/orders/orders/1/tracking/">Order tracking</a> - GET</li>
+                                <li>• <a href="/api/orders/orders/summary/">Orders Summary</a> - GET</li>
+                            </ul>
+                            
+                            <h6>Returns</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/orders/returns/">Return Requests</a> - GET, POST, PUT, DELETE</li>
+                                <li>• <a href="/api/orders/returns/1/approve/">Return approve</a> (Admin) - POST</li>
+                                <li>• <a href="/api/orders/returns/1/reject/">Return reject</a> (Admin) - POST</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payments & Newsletter -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">💳 Payments & Newsletter</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Payment Processing</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/payments/initialize-payment/">Initialize Payment</a> - POST</li>
+                                <li>• <a href="/api/payments/verify-payment/">Verify Payment</a> - POST</li>
+                            </ul>
+                            
+                            <h6>Newsletter</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/subscribers/">Newsletter Subscribers</a> - GET, POST</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Panel -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">⚙️ Administration</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Admin Panel</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/admin/">Django Admin Panel</a></li>
+                            </ul>
+                            
+                            <h6>API Documentation</h6>
+                            <ul class="list-unstyled small">
+                                <li>• <a href="/api/products/">Products API Root</a></li>
+                                <li>• <a href="/api/accounts/">Accounts API Root</a></li>
+                                <li>• <a href="/api/cart/">Cart API Root</a></li>
+                                <li>• <a href="/api/orders/">Orders API Root</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h6>📚 Additional Information:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Base URL:</strong> All API endpoints are prefixed with <code>/api/</code></li>
+                            <li><strong>Authentication:</strong> Most endpoints require authentication via session or token</li>
+                            <li><strong>Data Format:</strong> All endpoints accept and return JSON data</li>
+                            <li><strong>HTTP Methods:</strong> GET (read), POST (create), PUT/PATCH (update), DELETE (remove)</li>
+                            <li><strong>Permissions:</strong> Some endpoints require admin privileges or ownership</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    </body>
+</html>

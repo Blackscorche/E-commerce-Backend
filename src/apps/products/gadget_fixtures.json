@@ -1,0 +1,218 @@
+[
+  {
+    "model": "products.brand",
+    "pk": 1,
+    "fields": {
+      "name": "Apple",
+      "slug": "apple",
+      "description": "Apple Inc. is an American multinational technology company.",
+      "website": "https://apple.com",
+      "founded_year": 1976
+    }
+  },
+  {
+    "model": "products.brand",
+    "pk": 2,
+    "fields": {
+      "name": "Samsung",
+      "slug": "samsung",
+      "description": "Samsung Electronics Co., Ltd. is a South Korean multinational electronics corporation.",
+      "website": "https://samsung.com",
+      "founded_year": 1969
+    }
+  },
+  {
+    "model": "products.brand",
+    "pk": 3,
+    "fields": {
+      "name": "Google",
+      "slug": "google",
+      "description": "Google LLC is an American multinational technology company.",
+      "website": "https://google.com",
+      "founded_year": 1998
+    }
+  },
+  {
+    "model": "products.brand",
+    "pk": 4,
+    "fields": {
+      "name": "Sony",
+      "slug": "sony",
+      "description": "Sony Corporation is a Japanese multinational conglomerate corporation.",
+      "website": "https://sony.com",
+      "founded_year": 1946
+    }
+  },
+  {
+    "model": "products.category",
+    "pk": 1,
+    "fields": {
+      "name": "Electronics",
+      "parent": null,
+      "description": "Electronic devices and gadgets"
+    }
+  },
+  {
+    "model": "products.category",
+    "pk": 2,
+    "fields": {
+      "name": "Smartphones",
+      "parent": 1,
+      "description": "Mobile phones and accessories"
+    }
+  },
+  {
+    "model": "products.category",
+    "pk": 3,
+    "fields": {
+      "name": "Laptops",
+      "parent": 1,
+      "description": "Laptop computers and accessories"
+    }
+  },
+  {
+    "model": "products.category",
+    "pk": 4,
+    "fields": {
+      "name": "Audio & Headphones",
+      "parent": 1,
+      "description": "Audio devices, headphones, and speakers"
+    }
+  },
+  {
+    "model": "products.category",
+    "pk": 5,
+    "fields": {
+      "name": "Gaming",
+      "parent": 1,
+      "description": "Gaming consoles and accessories"
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 1,
+    "fields": {
+      "name": "iPhone 15 Pro Max",
+      "slug": "iphone-15-pro-max-1tb-natural-titanium",
+      "brand": 1,
+      "model_number": "MTUU3LL/A",
+      "description": "The iPhone 15 Pro Max features a titanium design, A17 Pro chip, and advanced camera system.",
+      "price": "1199.99",
+      "original_price": "1299.99",
+      "quantity": 25,
+      "featured": true,
+      "condition": "new",
+      "release_date": "2023-09-22",
+      "warranty_months": 12,
+      "specifications": {
+        "display": "6.7-inch Super Retina XDR",
+        "chip": "A17 Pro",
+        "storage": "1TB",
+        "camera": "48MP Main, 12MP Ultra Wide, 12MP Telephoto",
+        "battery": "Up to 29 hours video playback",
+        "connectivity": "5G, Wi-Fi 6E, Bluetooth 5.3",
+        "operating_system": "iOS 17"
+      },
+      "rating": "4.80",
+      "review_count": 324,
+      "category": [2],
+      "created_at": "2023-09-22T10:00:00Z",
+      "updated_at": "2023-09-22T10:00:00Z"
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 2,
+    "fields": {
+      "name": "Samsung Galaxy S24 Ultra",
+      "slug": "samsung-galaxy-s24-ultra-512gb-titanium-black",
+      "brand": 2,
+      "model_number": "SM-S928U",
+      "description": "The Galaxy S24 Ultra delivers exceptional performance with AI-powered features.",
+      "price": "1099.99",
+      "original_price": "1199.99",
+      "quantity": 18,
+      "featured": true,
+      "condition": "new",
+      "release_date": "2024-01-17",
+      "warranty_months": 12,
+      "specifications": {
+        "display": "6.8-inch Dynamic AMOLED 2X",
+        "processor": "Snapdragon 8 Gen 3",
+        "storage": "512GB",
+        "camera": "200MP Main, 50MP Periscope, 12MP Ultra Wide",
+        "battery": "5000mAh",
+        "connectivity": "5G, Wi-Fi 7, Bluetooth 5.3",
+        "operating_system": "Android 14"
+      },
+      "rating": "4.70",
+      "review_count": 892,
+      "category": [2],
+      "created_at": "2024-01-17T10:00:00Z",
+      "updated_at": "2024-01-17T10:00:00Z"
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 3,
+    "fields": {
+      "name": "MacBook Air M3",
+      "slug": "macbook-air-13-inch-m3-midnight",
+      "brand": 1,
+      "model_number": "MRXN3LL/A",
+      "description": "The new MacBook Air with M3 chip delivers exceptional performance and all-day battery life.",
+      "price": "1299.99",
+      "original_price": null,
+      "quantity": 12,
+      "featured": true,
+      "condition": "new",
+      "release_date": "2024-03-04",
+      "warranty_months": 12,
+      "specifications": {
+        "display": "13.6-inch Liquid Retina",
+        "chip": "Apple M3",
+        "memory": "8GB unified memory",
+        "storage": "256GB SSD",
+        "battery": "Up to 18 hours",
+        "connectivity": "Wi-Fi 6E, Bluetooth 5.3",
+        "operating_system": "macOS Sonoma"
+      },
+      "rating": "4.60",
+      "review_count": 234,
+      "category": [3],
+      "created_at": "2024-03-04T10:00:00Z",
+      "updated_at": "2024-03-04T10:00:00Z"
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 4,
+    "fields": {
+      "name": "Sony WH-1000XM5",
+      "slug": "sony-wh-1000xm5-wireless-noise-canceling-headphones",
+      "brand": 4,
+      "model_number": "WH1000XM5/B",
+      "description": "Industry-leading noise canceling headphones with exceptional sound quality.",
+      "price": "349.99",
+      "original_price": "399.99",
+      "quantity": 45,
+      "featured": false,
+      "condition": "new",
+      "release_date": "2022-05-12",
+      "warranty_months": 12,
+      "specifications": {
+        "driver": "30mm",
+        "frequency_response": "4Hz-40kHz",
+        "battery": "Up to 30 hours",
+        "charging": "USB-C, Quick charge",
+        "connectivity": "Bluetooth 5.2, NFC",
+        "noise_canceling": "Industry-leading ANC"
+      },
+      "rating": "4.50",
+      "review_count": 1567,
+      "category": [4],
+      "created_at": "2022-05-12T10:00:00Z",
+      "updated_at": "2022-05-12T10:00:00Z"
+    }
+  }
+]

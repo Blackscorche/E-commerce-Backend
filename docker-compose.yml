@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  migration:
+    build:
+      context: .
+      dockerfile: development.dockerfile
+    command: ["python", "manage.py", "migrate"]
+    env_file: .env
+    volumes:
+      - .:/opt/project/backend
+    depends_on:
+      db:
+        condition: service_healthy
+
+  load_fixtures:
+    build:
+      context: .
+      dockerfile: development.dockerfile
+    command: ["python", "manage.py", "loaddata", "src/apps/products/gadget_fixtures.json"]
+    env_file: .env
+    volumes:
+      - .:/opt/project/backend
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+
+  backend:
+    build:
+      context: .
+      dockerfile: development.dockerfile
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    env_file: .env
+    volumes:
+      - .:/opt/project/backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+      load_fixtures:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
