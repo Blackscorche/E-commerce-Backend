@@ -1,6 +1,8 @@
 from pathlib import Path
-
+from datetime import timedelta
+from decimal import Decimal
 from decouple import config
+from decimal import Decimal
 
 BASE_DIR = Path(__file__).parents[1]
 
@@ -27,6 +29,8 @@ INSTALLED_APPS = [
     "taggit",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",  # Add this for JWT support
+    "rest_framework_simplejwt.token_blacklist",  # For JWT blacklisting
     "django_filters",
     "dj_rest_auth",
     "django.contrib.sites",
@@ -181,9 +185,51 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "accounts.api.serializers.CustomRegisterSerializer",
 }
 
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
 REST_AUTH = {
-    "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "ecommerce-backend",
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'jwt-auth',
+    'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
+    'JWT_AUTH_HTTPONLY': False,
+    'SESSION_LOGIN': False,
+    'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
+    'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.TokenSerializer',
+    'JWT_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    'JWT_SERIALIZER_WITH_EXPIRATION': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    'JWT_TOKEN_CLAIMS_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -191,6 +237,26 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Paystack settings
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")
 PAYSTACK_PUBLIC_KEY = config("PAYSTACK_PUBLIC_KEY")
+PAYSTACK_WEBHOOK_SECRET = config("PAYSTACK_WEBHOOK_SECRET", default=PAYSTACK_SECRET_KEY)
+
+# Frontend URL for callbacks
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+
+# Payment settings
+PAYMENT_SETTINGS = {
+    'DEFAULT_CURRENCY': 'NGN',
+    'SUPPORTED_CURRENCIES': ['NGN', 'USD', 'GBP', 'EUR'],
+    'MIN_PAYMENT_AMOUNT': Decimal('1.00'),
+    'MAX_PAYMENT_AMOUNT': Decimal('50000000.00'),  # 50 million
+    'ENABLE_WEBHOOKS': True,
+    'WEBHOOK_TIMEOUT': 30,  # seconds
+    'RETRY_FAILED_WEBHOOKS': True,
+    'MAX_WEBHOOK_RETRIES': 3,
+    'ENABLE_FRAUD_DETECTION': True,
+    'MAX_PAYMENT_ATTEMPTS_PER_HOUR': 10,
+    'ENABLE_REFUNDS': True,
+    'AUTO_REFUND_TIMEOUT_HOURS': 48,  # Auto-refund after 48 hours if not processed
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -7,13 +7,13 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register('brands', BrandViewSet)
-router.register('categories', CategoryViewSet)
-router.register('products', ProductViewSet)
-router.register('wishlist', WishlistViewSet, basename='wishlist')
-router.register('price-alerts', PriceAlertViewSet, basename='price-alert')
-router.register('comparisons', ProductComparisonViewSet, basename='comparison')
-router.register('inventory-alerts', InventoryAlertViewSet, basename='inventory-alert')
+router.register(r'brands', BrandViewSet, basename='brand')
+router.register(r'categories', CategoryViewSet, basename='category')
+router.register(r'wishlist', WishlistViewSet, basename='wishlist')
+router.register(r'price-alerts', PriceAlertViewSet, basename='price-alert')
+router.register(r'product-comparison', ProductComparisonViewSet, basename='comparison')
+router.register(r'inventory-alerts', InventoryAlertViewSet, basename='inventory-alert')
+router.register(r'', ProductViewSet, basename='products')  # Empty prefix MUST be last
 
 urlpatterns = [
     path('', include(router.urls))

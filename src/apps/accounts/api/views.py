@@ -4,13 +4,16 @@ from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from ..models import UserProfile, Address, UserActivityLog, UserPreferences
 from .serializers import (
     UserProfileSerializer, AddressSerializer, UserActivityLogSerializer,
-    UserPreferencesSerializer, UserAvatarUploadSerializer, CustomUserDetailsSerializer
+    UserPreferencesSerializer, UserAvatarUploadSerializer, CustomUserDetailsSerializer,
+    CustomRegisterSerializer
 )
 
 User = get_user_model()
@@ -241,6 +244,54 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         )
         
         return Response({'message': 'Activity logged successfully'})
+    
+    def get_client_ip(self, request):
+        """Get client IP address"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+class CustomRegisterView(APIView):
+    """Custom registration view that returns JWT tokens"""
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = CustomRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save(request)
+            
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+            
+            # Create user profile
+            UserProfile.objects.get_or_create(user=user)
+            
+            # Create user preferences with defaults
+            UserPreferences.objects.get_or_create(user=user)
+            
+            # Log registration activity
+            UserActivityLog.objects.create(
+                user=user,
+                activity_type='account_created',
+                description='User account created',
+                ip_address=self.get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            # Return user details with JWT tokens
+            return Response({
+                'user': CustomUserDetailsSerializer(user).data,
+                'access': str(access_token),
+                'refresh': str(refresh),
+                'message': 'Registration successful'
+            }, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get_client_ip(self, request):
         """Get client IP address"""

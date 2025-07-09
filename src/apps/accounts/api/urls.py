@@ -1,12 +1,16 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 from .views import (
     UserProfileViewSet, AddressViewSet, UserActivityLogViewSet,
-    UserPreferencesViewSet, UserViewSet
+    UserPreferencesViewSet, UserViewSet, CustomRegisterView
 )
 
-# Create router for API viewsets
 router = DefaultRouter()
 router.register(r'profile', UserProfileViewSet, basename='profile')
 router.register(r'addresses', AddressViewSet, basename='address')
@@ -15,9 +19,11 @@ router.register(r'preferences', UserPreferencesViewSet, basename='preferences')
 router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
-    # Authentication URLs
-    path("auth/", include("dj_rest_auth.urls")),
-    path("auth/register/", include("dj_rest_auth.registration.urls")),
+    # JWT Authentication only
+    path("auth/login/", TokenObtainPairView.as_view(), name="login"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("auth/register/", CustomRegisterView.as_view(), name="register"),
     
     # API endpoints
     path("api/", include(router.urls)),

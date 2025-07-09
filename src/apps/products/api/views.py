@@ -6,11 +6,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg, F
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.http import Http404
 
 from ..models import Brand, Category, Product, ProductReview, Wishlist, WishlistItem, PriceAlert, ProductComparison, InventoryAlert
 from .serializers import (
     BrandSerializer, CategorySerializer, ProductListSerializer, ProductDetailSerializer,
-    ProductReviewSerializer, WishlistSerializer, PriceAlertSerializer, ProductComparisonSerializer, InventoryAlertSerializer
+    ProductReviewSerializer, WishlistSerializer, PriceAlertSerializer, ProductComparisonSerializer, InventoryAlertSerializer,WishlistItemSerializer
 )
 
 
@@ -27,19 +28,42 @@ class BrandViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=['get'])
     def products(self, request, slug=None):
-        """Get all products for a specific brand"""
+        """Get all products for a specific brand, optionally filtered by category"""
         brand = self.get_object()
         products = Product.objects.filter(brand=brand)
+        category = None
         
-        # Apply filtering
+        # Apply category filtering if provided
+        category_name = request.query_params.get('category', None)
+        if category_name:
+            try:
+                # Use case-insensitive lookup by name since Category doesn't have slug
+                category = Category.objects.get(name__iexact=category_name)
+                products = products.filter(category=category)
+            except Category.DoesNotExist:
+                return Response(
+                    {'error': f'Category with name "{category_name}" not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Apply search filtering
         search = request.query_params.get('search', None)
         if search:
             products = products.filter(
                 Q(name__icontains=search) | Q(description__icontains=search)
             )
         
+        # Apply ordering
+        ordering = request.query_params.get('ordering', '-created_at')
+        products = products.order_by(ordering)
+        
         serializer = ProductListSerializer(products, many=True, context={'request': request})
-        return Response(serializer.data)
+        return Response({
+            'results': serializer.data,
+            'count': products.count(),
+            'brand': BrandSerializer(brand, context={'request': request}).data,
+            'category': CategorySerializer(category, context={'request': request}).data if category else None
+        })
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -48,9 +72,118 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'name'
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering = ['name']
+
+    def get_object(self):
+        """
+        Retrieve the category instance, with case-insensitive lookup by name
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+        
+        # Get the value from the URL (which will be lowercase in the case of 'laptops')
+        lookup_value = self.kwargs[lookup_url_kwarg]
+        
+        # Try case-insensitive lookup using iexact
+        filter_kwargs = {f"{self.lookup_field}__iexact": lookup_value}
+        
+        try:
+            obj = queryset.get(**filter_kwargs)
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except Category.DoesNotExist:
+            # If case-insensitive lookup fails, provide a more helpful error
+            available_categories = list(Category.objects.values_list('name', flat=True))
+            raise Http404(f"Category '{lookup_value}' not found. Available categories: {available_categories}")
+
+    @action(detail=True, methods=['get'])
+    def brands(self, request, name=None):
+        """Get all brands that have products in this category"""
+        category = self.get_object()
+        
+        # Get distinct brands that have products in this category
+        brands = Brand.objects.filter(
+            products__category=category
+        ).distinct().order_by('name')
+        
+        # Apply search filtering if provided
+        search = request.query_params.get('search', None)
+        if search:
+            brands = brands.filter(
+                Q(name__icontains=search) | Q(description__icontains=search)
+            )
+        
+        # Serialize brands with product count in this category
+        brand_data = []
+        for brand in brands:
+            product_count = Product.objects.filter(
+                brand=brand, 
+                category=category
+            ).count()
+            
+            brand_serializer = BrandSerializer(brand, context={'request': request})
+            brand_info = brand_serializer.data
+            brand_info['product_count_in_category'] = product_count
+            brand_data.append(brand_info)
+        
+        return Response(brand_data)
+
+    @action(detail=True, methods=['get'])
+    def products(self, request, name=None):
+        """Get all products in this category"""
+        category = self.get_object()
+        products = Product.objects.filter(category=category)
+        brand = None
+        
+        # Apply brand filtering if provided
+        brand_slug = request.query_params.get('brand', None)
+        if brand_slug:
+            try:
+                brand = Brand.objects.get(slug=brand_slug)
+                products = products.filter(brand=brand)
+            except Brand.DoesNotExist:
+                return Response(
+                    {'error': f'Brand with slug "{brand_slug}" not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Apply search filtering
+        search = request.query_params.get('search', None)
+        if search:
+            products = products.filter(
+                Q(name__icontains=search) | Q(description__icontains=search)
+            )
+        
+        # Apply ordering
+        ordering = request.query_params.get('ordering', '-created_at')
+        products = products.order_by(ordering)
+        
+        # Paginate results
+        page_size = int(request.query_params.get('page_size', 20))
+        offset = int(request.query_params.get('offset', 0))
+        
+        paginated_products = products[offset:offset + page_size]
+        
+        serializer = ProductListSerializer(paginated_products, many=True, context={'request': request})
+        return Response({
+            'results': serializer.data,
+            'count': products.count(),
+            'total': products.count(),
+            'offset': offset,
+            'page_size': page_size,
+            'category': CategorySerializer(category, context={'request': request}).data,
+            'brand': BrandSerializer(brand, context={'request': request}).data if brand else None
+        })
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -168,21 +301,42 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = ProductListSerializer(deals, many=True, context={'request': request})
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='new-arrivals')
     def new_arrivals(self, request):
         """Get newly released products"""
-        from datetime import date, timedelta
-        thirty_days_ago = date.today() - timedelta(days=30)
-        new_products = self.get_queryset().filter(release_date__gte=thirty_days_ago).order_by('-release_date')[:8]
-        serializer = ProductListSerializer(new_products, many=True, context={'request': request})
-        return Response(serializer.data)
+        try:
+            from datetime import date, timedelta
+            thirty_days_ago = date.today() - timedelta(days=30)
+            
+            # Get products released in the last 30 days, or all products if none in that range
+            new_products = self.get_queryset().filter(release_date__gte=thirty_days_ago).order_by('-release_date')
+            if not new_products.exists():
+                # If no products in last 30 days, get latest 8 products by creation date
+                new_products = self.get_queryset().order_by('-created_at')[:8]
+            else:
+                new_products = new_products[:8]
+                
+            serializer = ProductListSerializer(new_products, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='top-rated')
     def top_rated(self, request):
         """Get top rated products"""
-        top_rated = self.get_queryset().filter(rating__gte=4.5).order_by('-rating', '-review_count')[:8]
-        serializer = ProductListSerializer(top_rated, many=True, context={'request': request})
-        return Response(serializer.data)
+        try:
+            # Get products with rating >= 3.0 (more inclusive), ordered by rating
+            top_rated = self.get_queryset().filter(rating__gte=3.0).order_by('-rating', '-review_count')
+            if not top_rated.exists():
+                # If no rated products, get all products ordered by creation date
+                top_rated = self.get_queryset().order_by('-created_at')[:8]
+            else:
+                top_rated = top_rated[:8]
+                
+            serializer = ProductListSerializer(top_rated, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WishlistViewSet(viewsets.ModelViewSet):
@@ -197,6 +351,16 @@ class WishlistViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        """Override list to return wishlist items directly"""
+        try:
+            wishlist = Wishlist.objects.get(user=request.user)
+            wishlist_items = wishlist.wishlist_items.all()
+            serializer = WishlistItemSerializer(wishlist_items, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Wishlist.DoesNotExist:
+            return Response([])  # Return empty array if no wishlist exists
 
     @action(detail=False, methods=['post'])
     def add_product(self, request):

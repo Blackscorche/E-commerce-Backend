@@ -146,11 +146,11 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 
 class WishlistItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
-    added_to_wishlist = serializers.DateTimeField(source='added_at', read_only=True)
+    added_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = WishlistItem
-        fields = ('product', 'added_to_wishlist')
+        fields = ('id', 'product', 'added_at')
 
 
 class WishlistSerializer(serializers.ModelSerializer):
