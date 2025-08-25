@@ -6,7 +6,7 @@ from decimal import Decimal
 
 BASE_DIR = Path(__file__).parents[1]
 
-PROJECT_ENVIRONMENT = config("PROJECT_ENVIRONMENT")
+PROJECT_ENVIRONMENT = config("PROJECT_ENVIRONMENT", default="development")
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
