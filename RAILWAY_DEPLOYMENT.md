@@ -150,6 +150,35 @@ Or use an online generator: https://djecrety.ir/
 
 ## Troubleshooting
 
+### Healthcheck Failing / Service Unavailable
+
+If the healthcheck is failing, check the following:
+
+1. **Check Railway Logs**: Go to your Railway project → Deployments → View Logs
+   - Look for errors during startup
+   - Check if migrations are running successfully
+   - Verify the server is starting
+
+2. **Database Connection Issues**:
+   - Ensure PostgreSQL service is added and running
+   - Verify `PROJECT_ENVIRONMENT=production` is set
+   - Railway automatically provides `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
+   - Check that these variables are present in Railway → Variables
+
+3. **Missing Environment Variables**:
+   - Ensure `DJANGO_SECRET_KEY` is set
+   - Ensure `ALLOWED_HOSTS` includes your Railway domain
+   - Verify `PROJECT_ENVIRONMENT=production`
+
+4. **Port Issues**:
+   - Railway automatically sets `$PORT` - don't override it
+   - The server should bind to `0.0.0.0:$PORT`
+
+5. **Migrations Failing**:
+   - Check logs for migration errors
+   - Try running migrations manually in Railway's console
+   - Ensure database is accessible
+
 ### Database Connection Issues
 - Ensure PostgreSQL service is added and running
 - Check that database variables are set correctly

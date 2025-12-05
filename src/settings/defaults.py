@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).parents[1]
 
 PROJECT_ENVIRONMENT = config("PROJECT_ENVIRONMENT", default="development")
 
-SECRET_KEY = config("DJANGO_SECRET_KEY")
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-change-this-in-production")
 
 DEBUG = PROJECT_ENVIRONMENT == "development"
 
