@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["python313", "postgresql"]
+
+[phases.install]
+cmds = [
+    "pip install --upgrade pip",
+    "pip install -r requirements.txt"
+]
+
+[start]
+cmd = "python manage.py migrate && gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile - --error-logfile - src.wsgi:application"
+

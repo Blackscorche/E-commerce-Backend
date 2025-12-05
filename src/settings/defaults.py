@@ -84,24 +84,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "src.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Database configuration
+if PROJECT_ENVIRONMENT == "production":
+    # PostgreSQL for production (Railway, Docker, etc.)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("POSTGRES_DB", default="railway"),
+            "USER": config("POSTGRES_USER", default="postgres"),
+            "PASSWORD": config("POSTGRES_PASSWORD", default=""),
+            "HOST": config("POSTGRES_HOST", default="localhost"),
+            "PORT": config("POSTGRES_PORT", default="5432"),
+        }
     }
-}
-
-# PostgreSQL config for production/docker
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": config("POSTGRES_DB"),
-#         "USER": config("POSTGRES_USER"),
-#         "PASSWORD": config("POSTGRES_PASSWORD"),
-#         "HOST": config("POSTGRES_HOST"),
-#         "PORT": config("POSTGRES_PORT"),
-#     }
-# }
+else:
+    # SQLite for development
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -132,7 +135,18 @@ USE_TZ = True
 
 TAGGIT_CASE_INSENSITIVE = True
 
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS settings
+if PROJECT_ENVIRONMENT == "production":
+    # In production, only allow specific frontend URL
+    CORS_ALLOWED_ORIGINS = config(
+        "CORS_ALLOWED_ORIGINS",
+        default="https://e-commerce-frontend-lyart-seven.vercel.app",
+        cast=lambda v: [s.strip() for s in v.split(",")],
+    )
+    CORS_ORIGIN_ALLOW_ALL = False
+else:
+    # In development, allow all origins
+    CORS_ORIGIN_ALLOW_ALL = True
 
 # authentication related stuff
 AUTH_USER_MODEL = "accounts.CustomUser"
