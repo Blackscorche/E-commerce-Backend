@@ -240,13 +240,25 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         return queryset
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], url_path='reviews')
     def reviews(self, request, slug=None):
         """Get all reviews for a specific product"""
         product = self.get_object()
         reviews = ProductReview.objects.filter(product=product).order_by('-created_at')
-        serializer = ProductReviewSerializer(reviews, many=True, context={'request': request})
-        return Response(serializer.data)
+        
+        # Paginate results
+        page_size = int(request.query_params.get('page_size', 20))
+        offset = int(request.query_params.get('offset', 0))
+        total = reviews.count()
+        paginated_reviews = reviews[offset:offset + page_size]
+        
+        serializer = ProductReviewSerializer(paginated_reviews, many=True, context={'request': request})
+        return Response({
+            'results': serializer.data,
+            'count': total,
+            'offset': offset,
+            'page_size': page_size
+        })
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def add_review(self, request, slug=None):
@@ -274,7 +286,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], url_path='recommendations')
     def recommendations(self, request, slug=None):
         """Get product recommendations based on current product"""
         product = self.get_object()
@@ -285,7 +297,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         ).exclude(id=product.id).distinct()[:6]
         
         serializer = ProductListSerializer(similar_products, many=True, context={'request': request})
-        return Response(serializer.data)
+        return Response({
+            'results': serializer.data,
+            'count': len(serializer.data)
+        })
 
     @action(detail=False, methods=['get'])
     def featured(self, request):

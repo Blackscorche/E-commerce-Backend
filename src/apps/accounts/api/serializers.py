@@ -153,11 +153,11 @@ class CustomUserDetailsSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'email', 'full_name', 
             'initials', 'date_joined', 'last_login', 'profile', 
-            'preferences', 'addresses_count'
+            'preferences', 'addresses_count', 'is_staff', 'is_superuser'
         ]
         read_only_fields = [
             'id', 'email', 'full_name', 'initials', 'date_joined', 
-            'last_login', 'addresses_count'
+            'last_login', 'addresses_count', 'is_staff', 'is_superuser'
         ]
     
     def get_addresses_count(self, obj):

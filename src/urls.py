@@ -1,6 +1,6 @@
 """src URL Configuration
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The urlpatterns list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.1/topics/http/urls/
 Examples:
 Function views
@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from src.apps.orders.api.views import SwapCreateView, SwapListView
 from django.views.generic.base import TemplateView
 
 
@@ -33,6 +34,9 @@ urlpatterns = [
     path(f"{API_PREFIX}/subscribers/", include("src.apps.newsletter.api.urls")),
     path(f"{API_PREFIX}/cart/", include("src.apps.cart.api.urls")),
     path(f"{API_PREFIX}/orders/", include("src.apps.orders.api.urls")),
+    path(f"{API_PREFIX}/admin/", include("src.apps.orders.api.admin_urls")),
+    path(f"{API_PREFIX}/swap/create", SwapCreateView.as_view(), name="swap-create"),
+    path(f"{API_PREFIX}/swap/my", SwapListView.as_view(), name="swap-my"),
 ]
 
 # to load static/media files in development environment

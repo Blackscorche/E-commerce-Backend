@@ -283,3 +283,34 @@ class ReturnRequest(models.Model):
     
     def __str__(self):
         return f"Return request for {self.order}"
+
+class SwapRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='swap_requests', null=True, blank=True)
+    email = models.EmailField(blank=True, null=True, help_text="Email for non-logged-in users")
+    user_device = models.JSONField(default=dict)
+    estimated_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    final_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text="Final value set by admin after inspection")
+    target_device_id = models.CharField(max_length=120, blank=True, default='')
+    target_device_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    difference = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True, help_text="Admin notes about the swap")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        email = self.user.email if self.user else (self.email or 'No email')
+        return f"Swap {self.id} - {email} - {self.status}"

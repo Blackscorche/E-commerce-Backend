@@ -3,14 +3,15 @@ from django.db import transaction
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from decimal import Decimal
 
-from ..models import Order, OrderItem, ReturnRequest
+from ..models import Order, OrderItem, ReturnRequest, SwapRequest
 from .serializers import (
     OrderSerializer, OrderSummarySerializer, CreateOrderSerializer,
-    ReturnRequestSerializer, OrderUpdateSerializer
+    ReturnRequestSerializer, OrderUpdateSerializer, SwapRequestSerializer
 )
 from src.apps.cart.models import Cart
 from src.apps.accounts.models import Address, UserActivityLog
@@ -175,7 +176,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             'phone_number': address.phone_number
         }
     
-    @action(detail=True, methods=['post'], url_path='cancel_order')
+    @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_order_action(self, request, order_number=None):
         """Cancel an order"""
         order = self.get_object()
@@ -288,3 +289,127 @@ class ReturnRequestViewSet(viewsets.ModelViewSet):
         return_request.save()
         
         return Response({'message': 'Return request rejected'})
+
+class SwapRequestViewSet(viewsets.ModelViewSet):
+    """Create and list swap requests for the authenticated user"""
+    serializer_class = SwapRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SwapRequest.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        payload = {
+            'user_device': request.data.get('userDevice') or request.data.get('user_device') or {},
+            'estimated_value': request.data.get('estimatedValue') or request.data.get('estimated_value') or 0,
+            'target_device_id': request.data.get('targetDeviceId') or request.data.get('target_device_id') or '',
+            'target_device_price': request.data.get('targetDevicePrice') or request.data.get('target_device_price') or 0,
+            'difference': request.data.get('difference') or 0,
+        }
+        serializer = self.get_serializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        swap = serializer.save(user=request.user, status='pending')
+        return Response(self.get_serializer(swap).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], url_path='my')
+    def my_swaps(self, request):
+        swaps = self.get_queryset()
+        page = self.paginate_queryset(swaps)
+        if page is not None:
+            data = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(data)
+        serializer = self.get_serializer(swaps, many=True)
+        return Response(serializer.data)
+
+class SwapCreateView(APIView):
+    permission_classes = []  # Allow unauthenticated users
+
+    def post(self, request):
+        try:
+            print(f"[SWAP] Swap create request received: {request.data}")
+            
+            # Get and validate required fields
+            target_device_id = request.data.get('targetDeviceId') or request.data.get('target_device_id') or ''
+            if not target_device_id:
+                return Response({'detail': 'Target device ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Convert numeric values safely
+            try:
+                estimated_value = float(request.data.get('estimatedValue') or request.data.get('estimated_value') or 0)
+                target_device_price = float(request.data.get('targetDevicePrice') or request.data.get('target_device_price') or 0)
+                difference = float(request.data.get('difference') or 0)
+            except (ValueError, TypeError) as e:
+                return Response({'detail': f'Invalid numeric value: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            payload = {
+                'user_device': request.data.get('userDevice') or request.data.get('user_device') or {},
+                'email': request.data.get('email', '').strip(),
+                'estimated_value': estimated_value,
+                'target_device_id': str(target_device_id),
+                'target_device_price': target_device_price,
+                'difference': difference,
+            }
+            
+            print(f"[SWAP] Payload prepared: {payload}")
+            
+            serializer = SwapRequestSerializer(data=payload, context={'request': request})
+            if not serializer.is_valid():
+                print(f"[SWAP] Serializer errors: {serializer.errors}")
+                return Response({'detail': 'Validation failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Save swap with user if authenticated, otherwise use email
+            user = None
+            try:
+                if hasattr(request, 'user') and request.user.is_authenticated:
+                    user = request.user
+            except:
+                user = None
+            
+            email = request.data.get('email', '').strip() if not user else None
+            
+            print(f"[SWAP] User: {user}, Email: {email}")
+            
+            # Ensure email is set properly for non-authenticated users
+            if not user and not email:
+                return Response({'detail': 'Email is required when not logged in.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                # Prepare save kwargs - only include fields that should be set
+                save_kwargs = {'status': 'pending'}
+                if user:
+                    save_kwargs['user'] = user
+                else:
+                    save_kwargs['email'] = email
+                
+                print(f"[SWAP] Saving swap with kwargs: {save_kwargs}")
+                swap = serializer.save(**save_kwargs)
+                print(f"[SWAP] Swap created successfully: {swap.id}")
+                
+                # Return serialized swap data
+                swap_serializer = SwapRequestSerializer(swap, context={'request': request})
+                return Response(swap_serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as save_error:
+                import traceback
+                error_trace = traceback.format_exc()
+                error_msg = str(save_error)
+                print(f"[SWAP] Error saving swap: {error_msg}")
+                print(error_trace)
+                return Response({
+                    'detail': f'Failed to save swap: {error_msg}',
+                    'error': error_msg,
+                    'error': error_msg
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            import traceback
+            print(f"[SWAP] Error creating swap: {str(e)}")
+            print(traceback.format_exc())
+            return Response({'detail': str(e), 'error': 'Failed to create swap request'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SwapListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        swaps = SwapRequest.objects.filter(user=request.user).order_by('-created_at')
+        serializer = SwapRequestSerializer(swaps, many=True)
+        return Response(serializer.data)

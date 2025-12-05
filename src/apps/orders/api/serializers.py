@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
 
-from ..models import Order, OrderItem, OrderStatusHistory, OrderShippingUpdate, ReturnRequest
+from ..models import Order, OrderItem, OrderStatusHistory, OrderShippingUpdate, ReturnRequest, SwapRequest
 from src.apps.products.api.serializers import ProductSerializer
 from src.apps.accounts.models import Address
 
@@ -167,3 +167,45 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
             )
         
         return instance
+
+class SwapRequestSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True, required=False)
+    email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
+    
+    class Meta:
+        model = SwapRequest
+        fields = [
+            'id',
+            'user',
+            'user_email',
+            'email',
+            'user_device',
+            'estimated_value',
+            'final_value',
+            'target_device_id',
+            'target_device_price',
+            'difference',
+            'status',
+            'admin_notes',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at', 'final_value', 'admin_notes']
+    
+    def validate(self, data):
+        """Ensure email is provided if user is not authenticated"""
+        request = self.context.get('request', None)
+        user = None
+        if request and hasattr(request, 'user'):
+            try:
+                user = request.user if request.user.is_authenticated else None
+            except:
+                user = None
+        
+        email = data.get('email', '') or ''
+        
+        # If no user and no email, raise validation error
+        if not user and not email:
+            raise serializers.ValidationError({'email': 'Email is required when not logged in.'})
+        
+        return data

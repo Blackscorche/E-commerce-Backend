@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
+from decimal import Decimal
 
 from ..models import Cart, CartItem, SavedForLater
 from .serializers import (
@@ -154,6 +155,33 @@ class CartViewSet(viewsets.ModelViewSet):
             'is_valid': len(issues) == 0,
             'issues': issues
         })
+
+    @action(detail=False, methods=['post'])
+    def calculate_shipping(self, request):
+        """Calculate a simple shipping cost for the current cart, matching frontend expectations."""
+        cart = self.get_object()
+
+        # Base + weight based, reusing the same logic idea as orders
+        base_shipping = Decimal('1000.00')
+        if cart.subtotal >= Decimal('50000.00'):
+            amount = Decimal('0.00')
+        else:
+            weight_cost = cart.total_weight * Decimal('100.00')
+            amount = base_shipping + weight_cost
+
+        return Response({'amount': str(amount)})
+
+    @action(detail=False, methods=['post'])
+    def calculate_tax(self, request):
+        """Calculate tax for a given subtotal (7.5% VAT), used by the frontend cart context."""
+        subtotal = request.data.get('subtotal') or '0'
+        try:
+            subtotal_dec = Decimal(str(subtotal))
+        except Exception:
+            subtotal_dec = Decimal('0')
+
+        tax = subtotal_dec * Decimal('0.075')
+        return Response({'amount': str(tax)})
     
     @action(detail=False, methods=['post'])
     def save_for_later(self, request):
