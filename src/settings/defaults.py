@@ -87,14 +87,15 @@ WSGI_APPLICATION = "src.wsgi.application"
 # Database configuration
 if PROJECT_ENVIRONMENT == "production":
     # PostgreSQL for production (Railway, Docker, etc.)
+    # Railway provides both POSTGRES_* and PG* variables, prefer PG* format
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("POSTGRES_DB", default="railway"),
-            "USER": config("POSTGRES_USER", default="postgres"),
-            "PASSWORD": config("POSTGRES_PASSWORD", default=""),
-            "HOST": config("POSTGRES_HOST", default="localhost"),
-            "PORT": config("POSTGRES_PORT", default="5432"),
+            "NAME": config("PGDATABASE", default=config("POSTGRES_DB", default="railway")),
+            "USER": config("PGUSER", default=config("POSTGRES_USER", default="postgres")),
+            "PASSWORD": config("PGPASSWORD", default=config("POSTGRES_PASSWORD", default="")),
+            "HOST": config("PGHOST", default=config("POSTGRES_HOST", default="localhost")),
+            "PORT": config("PGPORT", default=config("POSTGRES_PORT", default="5432")),
         }
     }
 else:

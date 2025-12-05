@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.http import JsonResponse
 from src.apps.orders.api.views import SwapCreateView, SwapListView
 from django.views.generic.base import TemplateView
 
@@ -25,8 +26,15 @@ from django.views.generic.base import TemplateView
 API_PREFIX = "api"
 
 
+def health_check(request):
+    """Simple health check endpoint for Railway"""
+    return JsonResponse({"status": "healthy", "service": "ecommerce-backend"})
+
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="base.html"), name="index"),
+    path("health/", health_check, name="health"),
+    path(f"{API_PREFIX}/health/", health_check, name="api-health"),
     path("admin/", admin.site.urls),
     path(f"{API_PREFIX}/accounts/", include("src.apps.accounts.api.urls")),
     path(f"{API_PREFIX}/products/", include("src.apps.products.api.urls")),
