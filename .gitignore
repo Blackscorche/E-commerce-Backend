@@ -11,11 +11,7 @@ documentations/
 *.md.backup
 IMPLEMENTATION_*.md.bak
 
-# Environment and secret files
-.env*
-*.env.local
-*.env.production
-secrets.json
+# Environment and secret file
 
 # C extensions
 *.so
